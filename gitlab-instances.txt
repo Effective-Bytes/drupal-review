@@ -1,0 +1,14 @@
+# Known GitLab instances, used to detect the provider from the origin remote.
+#
+# Only public, general-purpose hosts belong in this file — it is part of a public
+# repository. Add your own or your clients' instances through the
+# GITLAB_INSTANCES environment variable instead; its entries are appended to
+# this list, they do not replace it:
+#
+#   export GITLAB_INSTANCES="gitlab.example.com"
+#
+# One host per line. Empty lines and lines starting with # are ignored.
+
+gitlab.com
+drupal.org
+drupalcode.org
