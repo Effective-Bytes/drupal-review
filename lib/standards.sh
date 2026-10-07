@@ -14,7 +14,7 @@ fetch_standards() {
     echo "Fetching development standards ($STANDARDS_REPO@$STANDARDS_REF)..." >&2
 
     local tmp
-    tmp=$(mktemp "${TMPDIR:-/tmp}/dev-standards.XXXXXX.tar.gz")
+    tmp=$(mktemp "${TMPDIR:-/tmp}/dev-standards.XXXXXX")
 
     if ! fetch_standards_tarball "$tmp"; then
         rm -f "$tmp"
