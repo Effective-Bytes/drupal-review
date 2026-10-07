@@ -102,7 +102,7 @@ gibt dessen Pfad als letzte Zeile aus (`DRUPAL_REVIEW_WORKDIR=…`):
 ~/.claude/skills/drupal-review/generate_context.sh
 ```
 
-Übergib anschließend `rules/REVIEW.md` als Instruktionen sowie den Inhalt des ausgegebenen
+Übergib anschließend `SKILL.md` (Ablauf) und `rules/REVIEW.md` (Regeln) als Instruktionen sowie den Inhalt des ausgegebenen
 Arbeitsverzeichnisses (`context/` und `development_standards/`) an deinen AI-Reviewer.
 
 ---
