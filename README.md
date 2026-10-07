@@ -34,7 +34,6 @@ verlässliche Review-Ergebnisse, um Wartbarkeit und Zuverlässigkeit zu fördern
   Platzierung von Logik.
 - **Es prüft nur, was im PR steht.** Ohne offenen Pull Request bzw. Merge Request für den
   aktuellen Branch bricht der Generator ab.
-- **Es ist keine Sicherheitsprüfung.** Für Security-Reviews eignet es sich nicht.
 
 ---
 
