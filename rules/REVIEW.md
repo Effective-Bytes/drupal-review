@@ -159,9 +159,6 @@ updates corresponding tests. Testable logic includes:
 Missing tests are never a finding. They go only into **Testvorschläge** and cite checklist
 item 6.1.3 in the **Übersicht**.
 
-Every finding that is not clear-cut also gets a test suggestion: the test that would prove the
-defect, with its starting state and expected result. Reference the finding by its number.
-
 For each suggestion, name the **test level** and **what to cover** — the unit under test, the
 key cases, edge cases, and error paths. Do **not** write the tests or provide test code. Use
 the Drupal levels:
@@ -187,8 +184,11 @@ during the review; always deliver the full report in this structure and order:
    - **Standard:** the checklist ID (e.g. `4.2.1`), the guideline, or *außerhalb der Standards*
    - **Code:** the quoted line(s)
    - **Problem:** why it is a problem; for 🔴 and defects, the failure scenario
+   - **Nachweis:** only for findings that are not clear-cut — the test that would prove the
+     defect: test level, starting state, expected result
    - **Empfehlung:** what to change (no code)
-3. **Testvorschläge** — **always present**; if no tests are warranted, say so.
+3. **Testvorschläge** — tests the PR itself is missing, nothing else. **Always present**; if no
+   tests are warranted, say so.
 4. **Übersicht** — **always the last section.** One row per finding *and* per test suggestion,
    in the same order:
 
