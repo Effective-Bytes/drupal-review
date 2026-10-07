@@ -24,8 +24,13 @@ fetch_standards() {
     local extract_dir="$work_dir/standards_download"
     local target_dir="$work_dir/development_standards"
     mkdir -p "$extract_dir" "$target_dir"
-    tar -xz --strip-components=1 -C "$extract_dir" -f "$tmp"
+    tar -xz -C "$extract_dir" -f "$tmp"
     rm -f "$tmp"
+
+    # GitHub names the tarball's top directory <owner>-<repo>-<short sha>.
+    local src
+    src=$(echo "$extract_dir"/*)
+    STANDARDS_COMMIT="${src##*-}"
 
     # Only the reviewer-relevant parts go into the context: the enforceable
     # checklist and the guidelines behind it. Everything else the standards
@@ -33,7 +38,7 @@ fetch_standards() {
     # noise the reviewer has to read past.
     local part
     for part in ki-reviewer richtlinien; do
-        [ -e "$extract_dir/$part" ] && cp -R "$extract_dir/$part" "$target_dir/"
+        [ -e "$src/$part" ] && cp -R "$src/$part" "$target_dir/"
     done
     rm -rf "$extract_dir"
 

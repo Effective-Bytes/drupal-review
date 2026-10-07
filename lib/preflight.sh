@@ -2,9 +2,7 @@
 
 run_preflight() {
     local provider="$1"
-    for bin in jq tree; do
-        command -v "$bin" >/dev/null 2>&1 || die "'$bin' ist erforderlich aber nicht installiert."
-    done
+    command -v jq >/dev/null 2>&1 || die "'jq' ist erforderlich aber nicht installiert."
     case "$provider" in
         github)
             command -v gh >/dev/null 2>&1 \

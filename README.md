@@ -9,9 +9,9 @@ verlässliche Review-Ergebnisse, um Wartbarkeit und Zuverlässigkeit zu fördern
 - Ein global installierbarer **Skill** für Claude Code (`drupal-review`)
 - **Review-Anweisungen** für KI-Code-Reviews (`rules/REVIEW.md`)
 - Ein **Kontext-Generator** (`generate_context.sh`), der die nötigen Informationen bereitstellt:
-  - vorverarbeiteter File-Tree
-  - PR-Kontext (Beschreibung, Kommentare, Inline-Kommentare, Diff)
-  - Commit-Liste und Merge-Konflikt-Analyse (combined diff, Composer-Dependency-Checks, Marker-Scan)
+  - PR-Kontext (Beschreibung, Kommentare, offene Review-Threads)
+  - Diff je Datei mit Zeilennummern, dazu ein Index aller geänderten Dateien
+  - File-Tree der berührten Module und Themes
   - die Development-Standards, gegen die geprüft wird — standardmäßig
     [`Effective-Bytes/development-standards`](https://github.com/Effective-Bytes/development-standards),
     umstellbar auf eigene (siehe *Eigene Standards verwenden*)
@@ -44,7 +44,7 @@ verlässliche Review-Ergebnisse, um Wartbarkeit und Zuverlässigkeit zu fördern
 
 - **Claude Code** — [Docs](https://code.claude.com/docs/de/overview)
 - **GitHub CLI (`gh`)** oder **GitLab CLI (`glab`)**, authentifiziert (siehe unten) — lädt Standards und PR-Kontext
-- **`jq`** und **`tree`** — für PR-Kommentare und den File-Tree
+- **`jq`** — für PR-Kommentare und Metadaten
 
 #### GitHub (`gh`)
 
