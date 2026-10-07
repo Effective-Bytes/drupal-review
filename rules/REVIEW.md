@@ -59,6 +59,8 @@ you need. Never fetch anything online and never run commands.
   must enforce it — except the rules listed under *What to Ignore*
 - `richtlinien/*` are the full guidelines behind the checklist. They also contain rules the
   checklist does not list yet; enforce those too
+- Paths and names in the standards are examples (`web/` as docroot, the `myproject_` prefix).
+  The project's own layout wins; a different spelling alone is no finding
 
 ---
 
@@ -123,6 +125,12 @@ Classify every finding into exactly one level:
 
 A failure scenario names the input or state and the wrong result it leads to. If you cannot
 write one down, the finding is at most 🟡.
+
+If the PR follows a pattern the project already uses, the finding is at most 🟡 and cites the
+existing use as `path:line`.
+
+Effort, cost or priority never lower a level. If they are your only reason to lower it, keep
+the level and mark the finding *Teamentscheidung*.
 
 ---
 
