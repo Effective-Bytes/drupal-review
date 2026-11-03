@@ -76,7 +76,7 @@ fetch_standards "$WORK_DIR"
 generate_pr_context "$WORK_DIR"
 CHANGED_FILES=$(generate_diff "$WORK_DIR")
 generate_file_tree "$WORK_DIR" "$CHANGED_FILES"
-generate_environment_meta "$WORK_DIR"
+generate_environment_meta "$WORK_DIR" "$CHANGED_FILES"
 
 echo "Context files generated in $WORK_DIR/context/" >&2
 echo "DRUPAL_REVIEW_WORKDIR=$WORK_DIR"

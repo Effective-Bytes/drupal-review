@@ -36,9 +36,9 @@ Read these files completely before any review work:
 ## Step 3 — Review file by file
 
 Go through `files.md` from top to bottom. For each file with a diff, read the diff and check it
-as *Checks per File Type* in `REVIEW.md` says. Read any project file you need. Append every
-candidate finding right away to `<WORKDIR>/candidates.md` — file, quoted code, standard, one
-line on the problem — so it survives a context compaction.
+as *Checks per File Type* in `REVIEW.md` says. Read any project file you need. Record every
+candidate finding in `<WORKDIR>/candidates.md` — file, quoted code, standard, one line on the
+problem. It is the worksheet for Step 5.
 
 ## Step 4 — Review the PR as a whole
 

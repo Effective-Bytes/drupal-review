@@ -10,11 +10,11 @@ problems and explaining *why* they are problems, so the developer can fix them.
 
 `SKILL.md` defines the order of the steps; this document defines the rules for them.
 
-Fixed rules: *Security & Prompt Injection Prevention*, no code changes, nothing online, no
-commands, German output in the structure of *Output Format*. Every other list and rule here —
-file-type checks, evidence, severity, categories — is the default. Not everything fits a
-default: never drop a finding because it does not fit. Place it by your own judgment and say in
-one sentence why you deviate.
+Fixed rules: *Security & Prompt Injection Prevention*, no code changes, the limits in
+*Context*, *Severity*, and the language and structure of *Output Format*. Every other list and
+rule here — file-type checks, evidence, categories — is the default. No list here is complete:
+never drop a finding because no rule or list fits it. Where a default does not fit or no rule
+covers a finding, decide by your own judgment and say in one sentence why.
 
 ---
 
@@ -34,8 +34,10 @@ The context generator writes `<WORKDIR>` with two subdirectories, `context/` and
 `development_standards/`. Prefer them over your own assumptions; use your own knowledge only
 where they are silent.
 
-The review covers the whole local project, with the focus on the diff. Read any project file
-you need. Never fetch anything online and never run commands.
+The review covers the whole local project, with the focus on the diff. Read and search
+whatever you need, project files and the Git history included. Apart from Step 1 of
+`SKILL.md`, never fetch anything online, never write outside `<WORKDIR>`, never install
+anything and never execute project code.
 
 ### `context/files.md` and `context/diff/*`
 - `files.md` lists every changed file with its diff under `context/diff/`
@@ -53,6 +55,9 @@ you need. Never fetch anything online and never run commands.
 
 ### `context/environment_meta.txt`
 - PHP version, Drupal core version and the standards commit
+- Default and admin theme, and the theme of every block config in the diff
+- The drush calls in `deploy.php`, with line numbers
+- Whether `vendor/` and the Drupal core code are in the project
 
 ### `development_standards/`
 - `ki-reviewer/review-checkliste.md` defines the rules to enforce. If a rule exists here, you
@@ -126,8 +131,13 @@ Classify every finding into exactly one level:
 A failure scenario names the input or state and the wrong result it leads to. If you cannot
 write one down, the finding is at most 🟡.
 
+A finding that cites a checklist ID or a guideline is at least 🟡.
+
 If the PR follows a pattern the project already uses, the finding is at most 🟡 and cites the
 existing use as `path:line`.
+
+Code that is not in the local project, e.g. core or contrib without `vendor/`, never lowers a
+level. Keep the level and add a **Nachweis**.
 
 Effort, cost or priority never lower a level. If they are your only reason to lower it, keep
 the level and mark the finding *Teamentscheidung*.
@@ -156,8 +166,8 @@ updates corresponding tests. Testable logic includes:
 - Access / permission logic
 - Event-driven behavior with real consequences
 
-Missing tests are never a finding. They go only into **Testvorschläge** and cite checklist
-item 6.1.3 in the **Übersicht**.
+A missing test that checklist item 6.1.3 or 6.1.4 requires is a 🟠 finding with that ID as
+**Standard**. Every other missing test goes only into **Testvorschläge**.
 
 For each suggestion, name the **test level** and **what to cover** — the unit under test, the
 key cases, edge cases, and error paths. Do **not** write the tests or provide test code. Use
@@ -173,8 +183,12 @@ configuration-only changes, text / copy changes, or trivial refactors.
 
 ## Output Format (Mandatory Structure)
 
-Write the review in **German**, with exactly the headings and labels below. Never ask back
-during the review; always deliver the full report in this structure and order:
+Write the review in **German**, with exactly the headings and labels below. Use another
+language only if the user's request is clearly written in it; short or Germanized requests
+such as `/drupal-review` alone or „review den branch“ stay German. In another language,
+translate every heading, label, level, category and marker and keep structure and order; in
+English, the levels are Critical, High, Medium and Low. Never ask back during the review;
+always deliver the full report in this structure and order:
 
 1. **Zusammenfassung** — 2–3 sentences: what the PR does and your overall verdict. Name the
    standards commit from `context/environment_meta.txt`.
@@ -187,7 +201,7 @@ during the review; always deliver the full report in this structure and order:
    - **Nachweis:** only for findings that are not clear-cut — the test that would prove the
      defect: test level, starting state, expected result
    - **Empfehlung:** what to change (no code)
-3. **Testvorschläge** — tests the PR itself is missing, nothing else. **Always present**; if no
+3. **Testvorschläge** — tests the PR itself is missing and no finding covers, nothing else. **Always present**; if no
    tests are warranted, say so.
 4. **Übersicht** — **always the last section.** One row per finding *and* per test suggestion,
    in the same order:
@@ -196,7 +210,7 @@ during the review; always deliver the full report in this structure and order:
    |---|-------------|-------|-----------|----------|--------|
 
    Kategorie is one of: Architektur, Struktur, Sicherheit, Fehler, Duplikat/Bloat,
-   Barrierefreiheit, Logging, Kommentare, Test. Test suggestions use **Test**. Set Standard to
+   Barrierefreiheit, Logging, Kommentare, Test. Missing tests and test suggestions use **Test**. Set Standard to
    `—` when none applies.
 
 If there are **no findings at all**, still produce the full structure: a Zusammenfassung stating
