@@ -48,12 +48,6 @@ detect_provider() {
     die "Provider nicht erkannt. GIT_PROVIDER=github|gitlab setzen oder --provider übergeben."
 }
 
-is_merge_commit() {
-    local parents
-    parents=$(git rev-list --parents -n 1 "$1" 2>/dev/null)
-    [ "$(( $(printf '%s' "$parents" | wc -w) - 1 ))" -ge 2 ]
-}
-
 should_ignore_compiled_file() {
     local file_path="$1"
     local file_name base_name dir_name

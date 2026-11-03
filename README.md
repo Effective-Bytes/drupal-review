@@ -9,9 +9,9 @@ verlässliche Review-Ergebnisse, um Wartbarkeit und Zuverlässigkeit zu fördern
 - Ein global installierbarer **Skill** für Claude Code (`drupal-review`)
 - **Review-Anweisungen** für KI-Code-Reviews (`rules/REVIEW.md`)
 - Ein **Kontext-Generator** (`generate_context.sh`), der die nötigen Informationen bereitstellt:
-  - vorverarbeiteter File-Tree
-  - PR-Kontext (Beschreibung, Kommentare, Inline-Kommentare, Diff)
-  - Commit-Liste und Merge-Konflikt-Analyse (combined diff, Composer-Dependency-Checks, Marker-Scan)
+  - PR-Kontext (Beschreibung, Kommentare, offene Review-Threads)
+  - Diff je Datei mit Zeilennummern, dazu ein Index aller geänderten Dateien
+  - File-Tree der berührten Module und Themes
   - die Development-Standards, gegen die geprüft wird — standardmäßig
     [`Effective-Bytes/development-standards`](https://github.com/Effective-Bytes/development-standards),
     umstellbar auf eigene (siehe *Eigene Standards verwenden*)
@@ -34,7 +34,6 @@ verlässliche Review-Ergebnisse, um Wartbarkeit und Zuverlässigkeit zu fördern
   Platzierung von Logik.
 - **Es prüft nur, was im PR steht.** Ohne offenen Pull Request bzw. Merge Request für den
   aktuellen Branch bricht der Generator ab.
-- **Es ist keine Sicherheitsprüfung.** Für Security-Reviews eignet es sich nicht.
 
 ---
 
@@ -44,7 +43,7 @@ verlässliche Review-Ergebnisse, um Wartbarkeit und Zuverlässigkeit zu fördern
 
 - **Claude Code** — [Docs](https://code.claude.com/docs/de/overview)
 - **GitHub CLI (`gh`)** oder **GitLab CLI (`glab`)**, authentifiziert (siehe unten) — lädt Standards und PR-Kontext
-- **`jq`** und **`tree`** — für PR-Kommentare und den File-Tree
+- **`jq`** — für PR-Kommentare und Metadaten
 
 #### GitHub (`gh`)
 
@@ -103,7 +102,7 @@ gibt dessen Pfad als letzte Zeile aus (`DRUPAL_REVIEW_WORKDIR=…`):
 ~/.claude/skills/drupal-review/generate_context.sh
 ```
 
-Übergib anschließend `rules/REVIEW.md` als Instruktionen sowie den Inhalt des ausgegebenen
+Übergib anschließend `SKILL.md` (Ablauf) und `rules/REVIEW.md` (Regeln) als Instruktionen sowie den Inhalt des ausgegebenen
 Arbeitsverzeichnisses (`context/` und `development_standards/`) an deinen AI-Reviewer.
 
 ---

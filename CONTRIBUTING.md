@@ -30,7 +30,7 @@ Dies ist ein öffentliches Repository. Nicht hinein gehören:
 
 - **Bash**, kompatibel zu dem, was auf macOS und in gängigen Linux-Containern liegt.
   Keine neuen Abhängigkeiten ohne guten Grund — aktuell sind es `git`, `gh` oder `glab`,
-  `jq`, `tree`, `tar`, `curl`.
+  `jq`, `tar`, `curl`.
 - **Logik gehört nach `lib/`**, ein Thema pro Datei. `generate_context.sh` bleibt der
   Ablauf: sourcen, Provider bestimmen, Phasen aufrufen.
 - **Kommentare und Bezeichner auf Englisch**, Dokumentation und Nutzerausgaben auf

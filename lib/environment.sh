@@ -1,46 +1,66 @@
 #!/usr/bin/env bash
 
 generate_environment_meta() {
-    local work_dir="$1"
+    local work_dir="$1" changed_files="$2" lock php="" core="" theme_config core_dir block_files file
     echo "Generating environment meta information..." >&2
+
+    lock=$(find . -maxdepth 2 -name composer.lock -print -quit)
+    if [ -n "$lock" ]; then
+        php=$(jq -r '."platform-overrides".php // empty' "$lock")
+        core=$(jq -r 'first(.packages[] | select(.name == "drupal/core" or .name == "drupal/core-recommended") | .version) // empty' "$lock")
+    fi
+    [ -n "$php" ] || php=$(find . -maxdepth 2 -name .php-version -exec cat {} \; -quit | tr -d '[:space:]')
+
+    theme_config=$(find . -maxdepth 3 -path '*/config/*' -name system.theme.yml -print -quit)
+    theme_config="${theme_config#./}"
+    core_dir=$(find . -maxdepth 4 -path '*/core/lib/Drupal.php' -print -quit)
+    core_dir="${core_dir#./}"
+    core_dir="${core_dir%/lib/Drupal.php}"
+    block_files=$(printf '%s\n' "$changed_files" | grep -E '(^|/)block\.block\.[^/]+\.yml$')
+
     {
-        local COMPOSER_LOCK_PATH
-        COMPOSER_LOCK_PATH=$(find . -maxdepth 2 -name "composer.lock" -print -quit)
+        echo "PHP: ${php:-unbekannt}"
+        echo "Drupal Core: ${core:-unbekannt}"
+        echo "Standards: $STANDARDS_REPO@$STANDARDS_REF (Commit $STANDARDS_COMMIT)"
 
-        echo "--- Language Runtimes ---"
-        local PHP_VERSION="" PHP_SOURCE=""
-        if [ -n "$COMPOSER_LOCK_PATH" ]; then
-            PHP_VERSION=$(jq -r '."platform-overrides".php // empty' "$COMPOSER_LOCK_PATH" 2>/dev/null)
-            [ -n "$PHP_VERSION" ] && PHP_SOURCE="composer.lock platform-overrides"
-        fi
-        if [ -z "$PHP_VERSION" ]; then
-            local PHP_VERSION_FILE
-            PHP_VERSION_FILE=$(find . -maxdepth 2 -name ".php-version" -print -quit)
-            if [ -n "$PHP_VERSION_FILE" ]; then
-                PHP_VERSION=$(tr -d '[:space:]' < "$PHP_VERSION_FILE")
-                [ -n "$PHP_VERSION" ] && PHP_SOURCE="$PHP_VERSION_FILE"
-            fi
-        fi
-        echo "PHP: ${PHP_VERSION:-not specified} ${PHP_SOURCE:+(source: $PHP_SOURCE)}"
-        echo "Node: $(node -v 2>/dev/null || echo 'Not found')"
-        echo "NPM: $(npm -v 2>/dev/null || echo 'Not found')"
-        echo "Yarn: $(yarn -v 2>/dev/null || echo 'Not found')"
-
-        printf "\n--- Drupal Core (from composer.lock) ---\n"
-        if [ -n "$COMPOSER_LOCK_PATH" ]; then
-            echo "Found at: $COMPOSER_LOCK_PATH"
-            local DRUPAL_VERSION
-            DRUPAL_VERSION=$(jq -r '.packages[] | select(.name == "drupal/core") | .version' "$COMPOSER_LOCK_PATH" 2>/dev/null)
-            if [ -z "$DRUPAL_VERSION" ]; then
-                DRUPAL_VERSION=$(jq -r '.packages[] | select(.name == "drupal/core-recommended") | .version' "$COMPOSER_LOCK_PATH" 2>/dev/null)
-            fi
-            if [ -n "$DRUPAL_VERSION" ]; then
-                echo "Drupal Core: $DRUPAL_VERSION"
-            else
-                echo "Drupal core not found in $COMPOSER_LOCK_PATH"
-            fi
+        if [ -n "$theme_config" ]; then
+            echo "Default-Theme: $(yaml_value default "$theme_config") ($theme_config)"
+            echo "Admin-Theme: $(yaml_value admin "$theme_config") ($theme_config)"
         else
-            echo "composer.lock not found in root or first-level subdirectories."
+            echo "Default-Theme: unbekannt"
+            echo "Admin-Theme: unbekannt"
         fi
+
+        if [ -n "$block_files" ]; then
+            echo "Block-Konfiguration im Diff:"
+            printf '%s\n' "$block_files" | while IFS= read -r file; do
+                echo "- $file: Theme $(yaml_value theme "$file")"
+            done
+        else
+            echo "Block-Konfiguration im Diff: keine"
+        fi
+
+        if [ -f deploy.php ]; then
+            echo "drush-Aufrufe in deploy.php:"
+            grep -nE "run\(.*drush[^ ]*.*\b(deploy|updb|updatedb|cim|config:import|config-import|cr|cache:rebuild|cache-rebuild|site:install)\b" deploy.php \
+                | grep -vE '^[0-9]+:[[:space:]]*(//|\*|#)' \
+                | sed -E 's/^([0-9]+):[[:space:]]*/- deploy.php:\1: /'
+        else
+            echo "deploy.php: fehlt"
+        fi
+
+        if [ -d "$(dirname "${lock:-./composer.lock}")/vendor" ]; then
+            echo "vendor/: vorhanden"
+        else
+            echo "vendor/: fehlt"
+        fi
+        echo "Drupal-Core-Code: ${core_dir:-fehlt}"
     } > "$work_dir/context/environment_meta.txt"
+}
+
+# Prints the value of a top-level YAML key, or "unbekannt".
+yaml_value() {
+    local value
+    value=$(sed -n "s/^$1: *//p" "$2" 2>/dev/null | tr -d "\"'")
+    echo "${value:-unbekannt}"
 }

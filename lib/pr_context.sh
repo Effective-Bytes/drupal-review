@@ -1,27 +1,30 @@
 #!/usr/bin/env bash
 
 generate_pr_context() {
-    local work_dir="$1"
+    local work_dir="$1" pr_file="$1/context/pr.md"
 
     echo "Fetching PR context..." >&2
-    provider_get_mr_meta "$work_dir"
+    provider_get_mr_meta > "$pr_file"
 
-    echo "Fetching inline review comments..." >&2
-    local inline_file
-    inline_file=$(mktemp /tmp/pr-comments.XXXXXX.json)
-    provider_get_inline_comments "$inline_file"
-
-    local comment_count
-    comment_count=$(jq 'length' "$inline_file" 2>/dev/null || echo 0)
-    if [ "${comment_count:-0}" -gt 0 ]; then
-        printf '\n## Inline Review Kommentare\n\n' >> "$work_dir/context/pr_context.md"
-        jq -r '.[] | "**\(.author)** in `\(.path)` (Zeile \((.line // "?") | tostring)):\n> \(.body | gsub("\r\n";" ") | gsub("\n";" "))\n\nKontext:\n```diff\n\(.diff_hunk)\n```\n---"' \
-            "$inline_file" >> "$work_dir/context/pr_context.md"
+    # The PR diff is taken against the base branch, so it also carries whatever
+    # another, not yet merged branch brought in.
+    local merged
+    merged=$(provider_get_commit_titles \
+        | sed -nE "s/^Merge (remote-tracking )?branch '(origin\/)?([^']+)'.*/\3/p" \
+        | grep -vxF -f <(provider_get_branch_refs) | sort -u)
+    if [ -n "$merged" ]; then
+        printf '\n## Hineingemergte Branches\n\n' >> "$pr_file"
+        printf '%s\n' "$merged" | sed 's/^/- /' >> "$pr_file"
     fi
-    rm -f "$inline_file"
 
-    echo "Fetching PR diff..." >&2
-    printf '\n## Diff\n\n```diff\n' >> "$work_dir/context/pr_context.md"
-    provider_get_diff "$work_dir/context/pr_context.md"
-    printf '```\n' >> "$work_dir/context/pr_context.md"
+    echo "Fetching open review threads..." >&2
+    local threads
+    threads=$(provider_get_open_threads)
+    if [ "$(jq 'length' <<< "${threads:-[]}")" -gt 0 ]; then
+        printf '\n## Offene Review-Threads\n\n' >> "$pr_file"
+        printf '%s' "$threads" | jq -r '.[]
+            | "### `\(.path)` Zeile \(.line // "?")\n\n"
+              + (.comments | map("**\(.author):** \(.body)") | join("\n\n"))
+              + "\n"' >> "$pr_file"
+    fi
 }

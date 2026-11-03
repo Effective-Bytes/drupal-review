@@ -39,8 +39,8 @@ source "$SCRIPT_DIR/lib/preflight.sh"
 source "$SCRIPT_DIR/lib/standards.sh"
 # shellcheck source=lib/pr_context.sh
 source "$SCRIPT_DIR/lib/pr_context.sh"
-# shellcheck source=lib/merge_analysis.sh
-source "$SCRIPT_DIR/lib/merge_analysis.sh"
+# shellcheck source=lib/diff.sh
+source "$SCRIPT_DIR/lib/diff.sh"
 # shellcheck source=lib/file_tree.sh
 source "$SCRIPT_DIR/lib/file_tree.sh"
 # shellcheck source=lib/environment.sh
@@ -74,9 +74,9 @@ fi
 
 fetch_standards "$WORK_DIR"
 generate_pr_context "$WORK_DIR"
-generate_merge_analysis "$WORK_DIR"
-generate_file_tree "$WORK_DIR"
-generate_environment_meta "$WORK_DIR"
+CHANGED_FILES=$(generate_diff "$WORK_DIR")
+generate_file_tree "$WORK_DIR" "$CHANGED_FILES"
+generate_environment_meta "$WORK_DIR" "$CHANGED_FILES"
 
 echo "Context files generated in $WORK_DIR/context/" >&2
 echo "DRUPAL_REVIEW_WORKDIR=$WORK_DIR"

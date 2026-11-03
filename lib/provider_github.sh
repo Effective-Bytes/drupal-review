@@ -14,19 +14,10 @@ provider_mr_exists() {
 }
 
 provider_get_branch_refs() {
-    local refs
-    refs=$(gh pr view --json baseRefName,headRefName 2>/dev/null)
-    printf 'BASE_REF=%s\nHEAD_REF=%s\n' \
-        "$(printf '%s' "$refs" | jq -r '.baseRefName // empty')" \
-        "$(printf '%s' "$refs" | jq -r '.headRefName // empty')"
-}
-
-provider_get_repo_id() {
-    gh repo view --json nameWithOwner -q '.nameWithOwner'
+    gh pr view --json baseRefName,headRefName -q '.baseRefName, .headRefName'
 }
 
 provider_get_mr_meta() {
-    local work_dir="$1"
     gh pr view --json title,body,headRefName,baseRefName,labels,reviews,comments \
       --template '# PR: {{.title}}
 **Branch:** {{.headRefName}} → {{.baseRefName}}
@@ -36,42 +27,40 @@ provider_get_mr_meta() {
 {{.body}}
 {{if .reviews}}
 ## Reviews
-{{range .reviews}}### {{.author.login}} ({{.state}})
+{{range .reviews}}{{if .body}}### {{.author.login}} ({{.state}})
 {{.body}}
-{{end}}{{end}}{{if .comments}}
+{{end}}{{end}}{{end}}{{if .comments}}
 ## Kommentare
 {{range .comments}}**{{.author.login}}:** {{.body}}
-{{end}}{{end}}' > "$work_dir/context/pr_context.md"
+{{end}}{{end}}'
 }
 
-provider_get_inline_comments() {
-    local outfile="$1"
-    local repo_id pr_number
-    repo_id=$(provider_get_repo_id)
-    pr_number=$(gh pr view --json number -q '.number')
-    gh api "repos/$repo_id/pulls/$pr_number/comments" \
-        | jq '[.[] | {author: .user.login, path: .path,
-                       line: (.line // .original_line), body: .body, diff_hunk: .diff_hunk}]' \
-        > "$outfile"
+provider_get_open_threads() {
+    gh api graphql -F owner='{owner}' -F repo='{repo}' \
+        -F number="$(gh pr view --json number -q '.number')" -f query='
+        query($owner: String!, $repo: String!, $number: Int!) {
+          repository(owner: $owner, name: $repo) {
+            pullRequest(number: $number) {
+              reviewThreads(first: 100) {
+                nodes {
+                  isResolved isOutdated path line
+                  comments(first: 50) { nodes { author { login } body } }
+                }
+              }
+            }
+          }
+        }' \
+        | jq '[.data.repository.pullRequest.reviewThreads.nodes[]
+               | select((.isResolved or .isOutdated) | not)
+               | {path, line, comments: [.comments.nodes[] | {author: .author.login, body}]}]'
 }
 
 provider_get_diff() {
-    local outfile="$1"
-    gh pr diff >> "$outfile"
+    gh pr diff
 }
 
-provider_get_changed_files() {
-    gh pr diff --name-only 2>/dev/null
-}
-
-provider_get_commits_json() {
-    local outfile="$1"
-    gh pr view --json commits \
-        | jq '{commits: [.commits[] | {
-            oid: .oid,
-            messageHeadline: .messageHeadline,
-            author: (.authors[0].name // .authors[0].login // "?"),
-            committedDate: .committedDate[:10]
-          }]}' \
-        > "$outfile"
+provider_get_commit_titles() {
+    # Not `gh pr view --json commits`: its messageHeadline is truncated.
+    gh api "repos/{owner}/{repo}/pulls/$(gh pr view --json number -q '.number')/commits?per_page=100" \
+        -q '.[].commit.message | split("\n")[0]'
 }
